@@ -6,10 +6,10 @@ OUTPUT="${2:-out/rootfs.ext4}"
 SIZE="${3:-512M}"
 
 export_image() {
-  local cid
-  cid=$(docker create "${IMAGE}" /bin/true)
-  trap 'docker rm -f "${cid}" >/dev/null 2>&1; rm -rf out/rootfs-staging' EXIT
+  cid=""
+  trap 'if [ -n "${cid-}" ]; then docker rm -f "${cid}"; fi; rm -rf out/rootfs-staging' EXIT
   rm -rf out/rootfs-staging
+  cid=$(docker create "${IMAGE}" /bin/true)
   mkdir -p out/rootfs-staging
   docker export "${cid}" | tar -xf - -C out/rootfs-staging
 }

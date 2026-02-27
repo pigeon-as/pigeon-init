@@ -96,7 +96,7 @@ func main() {
 
 	argv := api.BuildArgv(cfg.ExecOverride, imageEntrypoint, imageCmd, cfg.CmdOverride)
 	if len(argv) == 0 {
-		fatal("build argv", nil)
+		fatal("empty argv: no command configured", nil)
 	}
 
 	sup, err := process.New(argv, env, workDir, identity, logger)

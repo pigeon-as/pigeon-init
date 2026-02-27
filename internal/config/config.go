@@ -8,17 +8,17 @@ import (
 
 type RunConfig struct {
 	ImageConfig  *ImageConfig      `json:"ImageConfig,omitempty"`
-	ExecOverride []string           `json:"ExecOverride,omitempty"`
-	CmdOverride  *string            `json:"CmdOverride,omitempty"`
-	UserOverride *string            `json:"UserOverride,omitempty"`
-	ExtraEnv     map[string]string  `json:"ExtraEnv,omitempty"`
-	IPConfigs    []IPConfig         `json:"IPConfigs,omitempty"`
-	MTU          int                `json:"MTU,omitempty"`
-	Hostname     string             `json:"Hostname,omitempty"`
-	Mounts       []Mount            `json:"Mounts,omitempty"`
-	RootDevice   *string            `json:"RootDevice,omitempty"`
-	EtcResolv    *EtcResolv         `json:"EtcResolv,omitempty"`
-	EtcHosts     []EtcHost          `json:"EtcHosts,omitempty"`
+	ExecOverride []string          `json:"ExecOverride,omitempty"`
+	CmdOverride  *string           `json:"CmdOverride,omitempty"`
+	UserOverride *string           `json:"UserOverride,omitempty"`
+	ExtraEnv     map[string]string `json:"ExtraEnv,omitempty"`
+	IPConfigs    []IPConfig        `json:"IPConfigs,omitempty"`
+	MTU          int               `json:"MTU,omitempty"`
+	Hostname     string            `json:"Hostname,omitempty"`
+	Mounts       []Mount           `json:"Mounts,omitempty"`
+	RootDevice   *string           `json:"RootDevice,omitempty"`
+	EtcResolv    *EtcResolv        `json:"EtcResolv,omitempty"`
+	EtcHosts     []EtcHost         `json:"EtcHosts,omitempty"`
 }
 
 type ImageConfig struct {

@@ -45,7 +45,7 @@ func MountExtra(mounts []config.Mount, uid, gid uint32, logger *slog.Logger) err
 			return fmt.Errorf("mkdir %s: %w", m.MountPath, err)
 		}
 		if err := unix.Mount(m.DevicePath, m.MountPath, "ext4", unix.MS_RELATIME, ""); err != nil {
-			return err
+			return fmt.Errorf("mount %s on %s: %w", m.DevicePath, m.MountPath, err)
 		}
 		if err := unix.Chown(m.MountPath, int(uid), int(gid)); err != nil {
 			logger.Warn("chown mount failed", "path", m.MountPath, "err", err)

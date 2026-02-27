@@ -127,6 +127,7 @@ func disableChecksums(ifname string) error {
 	return nil
 }
 
+// setEthtool performs a SIOCETHTOOL ioctl. Assumes Linux ifreq layout (40 bytes, pointer at offset 16).
 func setEthtool(fd int, ifname string, cmd uint32, value uint32) error {
 	req := struct {
 		cmd  uint32

@@ -215,12 +215,12 @@ func checkOOM(pid int) bool {
 	if err != nil {
 		return false
 	}
-	defer f.Close()
 
 	needle := fmt.Sprintf("Killed process %d", pid)
 
 	done := make(chan bool, 1)
 	go func() {
+		defer f.Close()
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			if strings.Contains(scanner.Text(), needle) {
@@ -235,6 +235,7 @@ func checkOOM(pid int) bool {
 	case oom := <-done:
 		return oom
 	case <-time.After(10 * time.Millisecond):
+		f.Close()
 		return false
 	}
 }

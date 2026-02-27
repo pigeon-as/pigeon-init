@@ -101,8 +101,14 @@ func (s *Server) handleSignal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.supervisor.SignalCh <- sig
-	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+	select {
+	case s.supervisor.SignalCh <- sig:
+		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+	case <-s.supervisor.WaitResult():
+		http.Error(w, "workload not running", http.StatusConflict)
+	case <-r.Context().Done():
+		http.Error(w, "timeout", http.StatusGatewayTimeout)
+	}
 }
 
 func (s *Server) handleExec(w http.ResponseWriter, r *http.Request) {

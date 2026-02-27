@@ -12,7 +12,7 @@ build:
 		-o out/init ./cmd/init
 
 initrd: build
-	scripts/build-initrd.sh $(or $(CONFIG),example/run.json)
+	scripts/build-initrd.sh $(CONFIG)
 
 rootfs:
 	scripts/build-rootfs.sh $(IMAGE)
