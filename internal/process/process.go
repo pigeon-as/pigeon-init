@@ -168,7 +168,13 @@ func (s *Supervisor) reap() bool {
 	for {
 		var ws unix.WaitStatus
 		pid, err := unix.Wait4(-1, &ws, unix.WNOHANG, nil)
-		if err != nil || pid <= 0 {
+		if err != nil {
+			if err == unix.EINTR {
+				continue
+			}
+			return false
+		}
+		if pid <= 0 {
 			return false
 		}
 

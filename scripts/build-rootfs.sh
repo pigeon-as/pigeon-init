@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE="${1:?usage: build-rootfs.sh <docker-image> [size]}"
+IMAGE="${1:?usage: build-rootfs.sh <docker-image> [output] [size]}"
 OUTPUT="${2:-out/rootfs.ext4}"
 SIZE="${3:-512M}"
 
