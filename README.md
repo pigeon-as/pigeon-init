@@ -21,8 +21,8 @@ PID 1 init tailored for Firecracker micro-VMs.
 11. **Set hostname, /etc/hosts, /etc/resolv.conf**
 12. **Configure networking** — lo up, eth0 MTU + up, disable checksums, add addresses (IFA_F_NODAD), add routes
 13. **Spawn workload** — fork/exec with credentials, setsid, merged stdout/stderr pipe
-14. **Main loop** — SIGCHLD-driven reaping, signal forwarding to process group
-15. **Shutdown** — OOM check, unmount (retry + lazy fallback), sync, reboot
+14. **Main loop** — SIGCHLD-driven reaping, OOM detection, signal forwarding to process group
+15. **Shutdown** — unmount (retry + lazy fallback), sync, reboot
 
 ## Build
 
@@ -78,7 +78,7 @@ The JSON format is the contract between the host driver and guest init. PascalCa
     "Nameservers": ["8.8.8.8"]
   },
   "EtcHosts": [
-    {"Host": "my-app.internal", "IP": "10.0.0.2"}
+    {"Host": "my-app.internal", "IP": "10.0.0.2", "Desc": "app alias"}
   ]
 }
 ```
