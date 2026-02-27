@@ -26,6 +26,7 @@ type Result struct {
 type Supervisor struct {
 	cmd *exec.Cmd
 	pid int
+	pr  *os.File
 
 	result   Result
 	resultCh chan struct{}
@@ -62,9 +63,13 @@ func New(argv []string, env []string, workDir string, identity *user.Identity, l
 	}
 
 	if err := pr.Chown(int(identity.UID), int(identity.GID)); err != nil {
+		pr.Close()
+		pw.Close()
 		return nil, fmt.Errorf("chown pipe reader: %w", err)
 	}
 	if err := pw.Chown(int(identity.UID), int(identity.GID)); err != nil {
+		pr.Close()
+		pw.Close()
 		return nil, fmt.Errorf("chown pipe writer: %w", err)
 	}
 
@@ -72,14 +77,9 @@ func New(argv []string, env []string, workDir string, identity *user.Identity, l
 	cmd.Stdout = pw
 	cmd.Stderr = pw
 
-	// Copy pipe output to init stdout.
-	go func() {
-		_, _ = io.Copy(os.Stdout, pr)
-		pr.Close()
-	}()
-
 	return &Supervisor{
 		cmd:      cmd,
+		pr:       pr,
 		resultCh: make(chan struct{}),
 		SignalCh: make(chan os.Signal, 16),
 		logger:   logger,
@@ -88,6 +88,10 @@ func New(argv []string, env []string, workDir string, identity *user.Identity, l
 
 func (s *Supervisor) Start() error {
 	if err := s.cmd.Start(); err != nil {
+		s.pr.Close()
+		if w, ok := s.cmd.Stdout.(*os.File); ok {
+			w.Close()
+		}
 		return fmt.Errorf("start workload: %w", err)
 	}
 	s.pid = s.cmd.Process.Pid
@@ -96,6 +100,12 @@ func (s *Supervisor) Start() error {
 	if w, ok := s.cmd.Stdout.(*os.File); ok {
 		w.Close()
 	}
+
+	// Copy pipe output to init stdout.
+	go func() {
+		_, _ = io.Copy(os.Stdout, s.pr)
+		s.pr.Close()
+	}()
 
 	s.logger.Info("workload started", "pid", s.pid, "argv", s.cmd.Args)
 	return nil

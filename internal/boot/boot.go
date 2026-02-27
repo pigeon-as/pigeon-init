@@ -82,7 +82,7 @@ func MountEssential() error {
 		}
 	}
 
-	if err := os.MkdirAll("/run/lock", 0777); err != nil {
+	if err := os.MkdirAll("/run/lock", 01777); err != nil {
 		return fmt.Errorf("mkdir /run/lock: %w", err)
 	}
 

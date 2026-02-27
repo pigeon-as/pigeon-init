@@ -106,8 +106,14 @@ func scanPasswd(match func([]string) bool) (passwdEntry, bool) {
 			continue
 		}
 		if match(fields) {
-			uid, _ := strconv.ParseUint(fields[2], 10, 32)
-			gid, _ := strconv.ParseUint(fields[3], 10, 32)
+			uid, err := strconv.ParseUint(fields[2], 10, 32)
+			if err != nil {
+				continue
+			}
+			gid, err := strconv.ParseUint(fields[3], 10, 32)
+			if err != nil {
+				continue
+			}
 			home := fields[5]
 			return passwdEntry{uid: uint32(uid), gid: uint32(gid), home: home}, true
 		}
