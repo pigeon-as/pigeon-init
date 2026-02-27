@@ -11,6 +11,8 @@ import (
 	"github.com/pigeon-as/pigeon-init/internal/config"
 )
 
+const exitCodeRebootFailed = 1
+
 func Shutdown(mounts []config.Mount, logger *slog.Logger) {
 	for i := len(mounts) - 1; i >= 0; i-- {
 		unmountWithRetry(mounts[i].MountPath, logger)
@@ -22,7 +24,10 @@ func Shutdown(mounts []config.Mount, logger *slog.Logger) {
 
 	// Reboot terminates the VM in Firecracker.
 	logger.Info("rebooting")
-	_ = unix.Reboot(unix.LINUX_REBOOT_CMD_RESTART)
+	if err := unix.Reboot(unix.LINUX_REBOOT_CMD_RESTART); err != nil {
+		logger.Error("reboot failed", "err", err)
+		os.Exit(exitCodeRebootFailed)
+	}
 }
 
 func unmountWithRetry(path string, logger *slog.Logger) {

@@ -36,6 +36,7 @@ func SetupMMDS() error {
 		Dst:       &net.IPNet{IP: mmdsIP, Mask: net.CIDRMask(32, 32)},
 	}
 	if err := netlink.RouteAdd(route); err != nil {
+		_ = netlink.AddrDel(link, mmdsAddr)
 		return fmt.Errorf("mmds: add route: %w", err)
 	}
 	return nil
