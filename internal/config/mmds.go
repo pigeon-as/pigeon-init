@@ -9,10 +9,9 @@ import (
 	"strings"
 )
 
-const (
-	mmdsAddr     = "http://169.254.169.254"
-	mmdsTokenTTL = "60"
-)
+var mmdsAddr = "http://169.254.169.254"
+
+const mmdsTokenTTL = "60"
 
 // FetchMMDS retrieves the RunConfig from MMDS (V2 first, V1 fallback).
 func FetchMMDS(ctx context.Context) (*RunConfig, error) {
