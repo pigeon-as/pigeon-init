@@ -9,20 +9,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/pigeon-as/pigeon-init/internal/process"
-	"github.com/pigeon-as/pigeon-init/internal/user"
 )
 
 func newTestServer(t *testing.T) *Server {
 	t.Helper()
-	identity := &user.Identity{UID: 0, GID: 0, HomeDir: "/root"}
 	logger := slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil))
-	sup, err := process.New([]string{"/bin/sleep", "3600"}, []string{"PATH=/bin"}, "/", identity, logger)
-	if err != nil {
-		t.Fatalf("create supervisor: %v", err)
-	}
-	return NewServer(sup, []string{"PATH=/bin"}, logger)
+	return NewServer(nil, []string{"PATH=/bin"}, logger)
 }
 
 func TestHandleStatus(t *testing.T) {
@@ -116,7 +108,6 @@ func TestRouteRegistration(t *testing.T) {
 		path   string
 	}{
 		{"GET", "/v1/status"},
-		{"GET", "/v1/exit_code"},
 		{"POST", "/v1/signals"},
 		{"POST", "/v1/exec"},
 		{"GET", "/v1/ws/exec"},
