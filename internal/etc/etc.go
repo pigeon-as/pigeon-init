@@ -24,7 +24,7 @@ func SetHostname(hostname string) error {
 	return nil
 }
 
-func WriteHosts(entries []config.EtcHost) error {
+func WriteHosts(entries []config.EtcHost) (retErr error) {
 	if len(entries) == 0 {
 		return nil
 	}
@@ -33,7 +33,11 @@ func WriteHosts(entries []config.EtcHost) error {
 	if err != nil {
 		return fmt.Errorf("open /etc/hosts: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if cErr := f.Close(); cErr != nil && retErr == nil {
+			retErr = fmt.Errorf("close /etc/hosts: %w", cErr)
+		}
+	}()
 
 	for _, e := range entries {
 		var err error
