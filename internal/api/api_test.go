@@ -3,7 +3,6 @@
 package api
 
 import (
-	"sort"
 	"testing"
 )
 
@@ -180,11 +179,4 @@ func envToMap(env []string) map[string]string {
 		}
 	}
 	return m
-}
-
-func sortedSlice(s []string) []string {
-	c := make([]string, len(s))
-	copy(c, s)
-	sort.Strings(c)
-	return c
 }

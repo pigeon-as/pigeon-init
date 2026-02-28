@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-// Step 7: Resolve user/group from /etc/passwd + /etc/group.
-
 // withPasswdGroup sets up temp /etc/passwd and /etc/group content for testing.
 // It overrides the root filesystem paths used by the scanner functions.
 // Since scanPasswd/findGroupByName hardcode /etc/passwd and /etc/group,

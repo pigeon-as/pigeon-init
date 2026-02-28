@@ -9,20 +9,15 @@ import (
 	"strings"
 )
 
-const (
-	mmdsAddr     = "http://169.254.169.254"
-	mmdsTokenTTL = "60"
-)
+var mmdsAddr = "http://169.254.169.254"
+
+const mmdsTokenTTL = "60"
 
 // FetchMMDS retrieves the RunConfig from MMDS (V2 first, V1 fallback).
 func FetchMMDS(ctx context.Context) (*RunConfig, error) {
-	return fetchMMDSFrom(ctx, mmdsAddr)
-}
-
-func fetchMMDSFrom(ctx context.Context, baseURL string) (*RunConfig, error) {
-	data, err := fetchV2From(ctx, baseURL)
+	data, err := fetchV2(ctx)
 	if err != nil {
-		data, err = fetchV1From(ctx, baseURL)
+		data, err = fetchV1(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("mmds: %w", err)
 		}
@@ -35,8 +30,8 @@ func fetchMMDSFrom(ctx context.Context, baseURL string) (*RunConfig, error) {
 	return &cfg, nil
 }
 
-func fetchV2From(ctx context.Context, baseURL string) ([]byte, error) {
-	tokenReq, err := http.NewRequestWithContext(ctx, "PUT", baseURL+"/latest/api/token", nil)
+func fetchV2(ctx context.Context) ([]byte, error) {
+	tokenReq, err := http.NewRequestWithContext(ctx, "PUT", mmdsAddr+"/latest/api/token", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +53,7 @@ func fetchV2From(ctx context.Context, baseURL string) ([]byte, error) {
 	}
 
 	// Fetch metadata with token.
-	dataReq, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
+	dataReq, err := http.NewRequestWithContext(ctx, "GET", mmdsAddr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +73,8 @@ func fetchV2From(ctx context.Context, baseURL string) ([]byte, error) {
 	return io.ReadAll(dataResp.Body)
 }
 
-func fetchV1From(ctx context.Context, baseURL string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
+func fetchV1(ctx context.Context) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", mmdsAddr, nil)
 	if err != nil {
 		return nil, err
 	}

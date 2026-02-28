@@ -14,9 +14,7 @@ import (
 	"github.com/pigeon-as/pigeon-init/internal/user"
 )
 
-// Step 9: Vsock API handlers.
-
-func newTestServer(t *testing.T) (*Server, func()) {
+func newTestServer(t *testing.T) *Server {
 	t.Helper()
 	identity := &user.Identity{UID: 0, GID: 0, HomeDir: "/root"}
 	logger := slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil))
@@ -24,13 +22,11 @@ func newTestServer(t *testing.T) (*Server, func()) {
 	if err != nil {
 		t.Fatalf("create supervisor: %v", err)
 	}
-	srv := NewServer(sup, []string{"PATH=/bin"}, logger)
-	return srv, func() {}
+	return NewServer(sup, []string{"PATH=/bin"}, logger)
 }
 
 func TestHandleStatus(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	req := httptest.NewRequest("GET", "/v1/status", nil)
 	rec := httptest.NewRecorder()
@@ -50,8 +46,7 @@ func TestHandleStatus(t *testing.T) {
 }
 
 func TestHandleSignal_InvalidBody(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	req := httptest.NewRequest("POST", "/v1/signals", bytes.NewBufferString("not json"))
 	rec := httptest.NewRecorder()
@@ -63,8 +58,7 @@ func TestHandleSignal_InvalidBody(t *testing.T) {
 }
 
 func TestHandleSignal_InvalidSignalNumber(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	tests := []struct {
 		name string
@@ -90,8 +84,7 @@ func TestHandleSignal_InvalidSignalNumber(t *testing.T) {
 }
 
 func TestHandleExec_InvalidBody(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	req := httptest.NewRequest("POST", "/v1/exec", bytes.NewBufferString("not json"))
 	rec := httptest.NewRecorder()
@@ -103,8 +96,7 @@ func TestHandleExec_InvalidBody(t *testing.T) {
 }
 
 func TestHandleExec_EmptyCmd(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	body, _ := json.Marshal(map[string][]string{"cmd": {}})
 	req := httptest.NewRequest("POST", "/v1/exec", bytes.NewBuffer(body))
@@ -117,8 +109,7 @@ func TestHandleExec_EmptyCmd(t *testing.T) {
 }
 
 func TestRouteRegistration(t *testing.T) {
-	srv, cleanup := newTestServer(t)
-	defer cleanup()
+	srv := newTestServer(t)
 
 	routes := []struct {
 		method string

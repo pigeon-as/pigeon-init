@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-// Step 2: MMDS config delivery (V2 token + V1 fallback).
-
 func TestFetchMMDS_V2(t *testing.T) {
 	cfg := RunConfig{Hostname: "v2-host", MTU: 1400}
 	cfgJSON, _ := json.Marshal(cfg)
@@ -38,8 +36,9 @@ func TestFetchMMDS_V2(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
+	mmdsAddr = srv.URL
 
-	result, err := fetchMMDSFrom(context.Background(), srv.URL)
+	result, err := FetchMMDS(context.Background())
 	if err != nil {
 		t.Fatalf("FetchMMDS V2: %v", err)
 	}
@@ -58,10 +57,8 @@ func TestFetchMMDS_V1Fallback(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.Method == "PUT":
-			// V2 token fails.
 			http.Error(w, "not implemented", 405)
 		case r.Method == "GET" && r.URL.Path == "/":
-			// V1 fallback succeeds.
 			if r.Header.Get("Accept") != "application/json" {
 				t.Error("V1 request missing Accept header")
 			}
@@ -71,8 +68,9 @@ func TestFetchMMDS_V1Fallback(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
+	mmdsAddr = srv.URL
 
-	result, err := fetchMMDSFrom(context.Background(), srv.URL)
+	result, err := FetchMMDS(context.Background())
 	if err != nil {
 		t.Fatalf("FetchMMDS V1 fallback: %v", err)
 	}
@@ -86,8 +84,9 @@ func TestFetchMMDS_BothFail(t *testing.T) {
 		http.Error(w, "fail", 500)
 	}))
 	defer srv.Close()
+	mmdsAddr = srv.URL
 
-	_, err := fetchMMDSFrom(context.Background(), srv.URL)
+	_, err := FetchMMDS(context.Background())
 	if err == nil {
 		t.Error("FetchMMDS should fail when both V2 and V1 fail")
 	}
@@ -103,8 +102,9 @@ func TestFetchMMDS_InvalidJSON(t *testing.T) {
 		}
 	}))
 	defer srv.Close()
+	mmdsAddr = srv.URL
 
-	_, err := fetchMMDSFrom(context.Background(), srv.URL)
+	_, err := FetchMMDS(context.Background())
 	if err == nil {
 		t.Error("FetchMMDS should fail on invalid JSON")
 	}
