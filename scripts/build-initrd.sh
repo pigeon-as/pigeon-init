@@ -3,26 +3,18 @@ set -euo pipefail
 
 CONFIG="${1:-}"
 INIT_BIN="out/init"
+ROOT="out/initrd-root"
 
-stage() {
-  rm -rf out/initrd-staging
-  mkdir -p out/initrd-staging/{dev,pigeon,newroot}
-  cp "${INIT_BIN}" out/initrd-staging/init
-  chmod 755 out/initrd-staging/init
-  if [[ -n "${CONFIG}" && -f "${CONFIG}" ]]; then
-    cp "${CONFIG}" out/initrd-staging/pigeon/run.json
-  fi
-}
+[[ -f "${INIT_BIN}" ]] || { echo "error: run 'make build' first" >&2; exit 1; }
 
-pack() {
-  (cd out/initrd-staging && find . | cpio --quiet -o -H newc) > out/initrd.cpio
-  rm -rf out/initrd-staging
-}
+rm -rf "${ROOT}"
+trap 'rm -rf "${ROOT}"' EXIT
 
-main() {
-  [[ -f "${INIT_BIN}" ]] || { echo "init binary not found — run 'make init' first" >&2; exit 1; }
-  stage
-  pack
-}
+mkdir -p "${ROOT}"/{dev,pigeon,newroot}
+cp "${INIT_BIN}" "${ROOT}/init"
+chmod 755 "${ROOT}/init"
 
-main
+[[ -n "${CONFIG}" && -f "${CONFIG}" ]] && cp "${CONFIG}" "${ROOT}/pigeon/run.json"
+
+mkdir -p out
+(cd "${ROOT}" && find . | cpio --quiet -o -H newc) > out/initrd.cpio
