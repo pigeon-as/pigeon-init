@@ -55,6 +55,9 @@ func SetupMMDS() error {
 		Scope:     netlink.SCOPE_LINK,
 	}
 	if err := netlink.RouteAdd(route); err != nil {
+		// Roll back the temporary address since CleanupMMDS won't be
+		// called when SetupMMDS returns an error.
+		_ = netlink.AddrDel(link, mmdsTempAddr)
 		return fmt.Errorf("mmds: add route: %w", err)
 	}
 	return nil
