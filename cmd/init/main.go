@@ -145,7 +145,7 @@ func main() {
 
 func loadConfig(logger *slog.Logger) (*config.RunConfig, error) {
 	if err := netcfg.SetupMMDS(); err != nil {
-		logger.Debug("mmds network setup failed, using config file", "err", err)
+		logger.Warn("mmds network setup failed, using config file", "err", err)
 		return config.Load(configPath)
 	}
 	defer netcfg.CleanupMMDS()
@@ -155,7 +155,7 @@ func loadConfig(logger *slog.Logger) (*config.RunConfig, error) {
 
 	cfg, err := config.FetchMMDS(ctx)
 	if err != nil {
-		logger.Debug("mmds fetch failed, using config file", "err", err)
+		logger.Warn("mmds fetch failed, using config file", "err", err)
 		return config.Load(configPath)
 	}
 
