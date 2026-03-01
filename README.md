@@ -2,7 +2,7 @@
 
 PID 1 init tailored for Firecracker micro-VMs.
 
-> **Experimental.** This init code is modeled after the [Fly.io init](https://github.com/superfly/init-snapshot), since it's a good reference for Firecracker based init programs.
+> **Experimental.** This init code is ~~modeled after~~ architecturally based on the [Fly.io init](https://github.com/superfly/init-snapshot), since it's a good reference for Firecracker based init programs. But we experiment a bit more with MMDS and a few other things.
 
 ## What It Does
 
