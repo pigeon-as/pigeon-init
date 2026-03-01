@@ -1,0 +1,36 @@
+name: E2E
+
+on:
+  pull_request:
+
+env:
+  FC_VERSION: "1.14.1"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install Firecracker
+        run: |
+          curl -fSL -o firecracker.tgz \
+            https://github.com/firecracker-microvm/firecracker/releases/download/v${FC_VERSION}/firecracker-v${FC_VERSION}-x86_64.tgz
+          tar -xzf firecracker.tgz
+          sudo mv release-v${FC_VERSION}-x86_64/firecracker-v${FC_VERSION}-x86_64 /usr/local/bin/firecracker
+          rm -rf firecracker.tgz release-v${FC_VERSION}-x86_64
+
+      - name: Set up networking
+        run: |
+          sudo ip tuntap add tap0 mode tap
+          sudo ip addr add 169.254.169.1/30 dev tap0
+          sudo ip link set tap0 up
+
+      - name: Build testdata
+        run: make testdata
+
+      - name: Run e2e tests
+        run: sudo make e2e
