@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-CONFIG="${1:-}"
+OUTPUT="${1:-out/initrd.cpio}"
+CONFIG="${2:-}"
 INIT_BIN="out/init"
 ROOT="out/initrd-root"
 
@@ -16,5 +17,5 @@ chmod 755 "${ROOT}/init"
 
 [[ -n "${CONFIG}" && -f "${CONFIG}" ]] && cp "${CONFIG}" "${ROOT}/pigeon/run.json"
 
-mkdir -p out
-(cd "${ROOT}" && find . | cpio --quiet -o -H newc) > out/initrd.cpio
+mkdir -p "$(dirname "${OUTPUT}")"
+(cd "${ROOT}" && find . | cpio --quiet -o -H newc) > "${OUTPUT}"
