@@ -91,7 +91,7 @@ func boot(t *testing.T, rc *config.RunConfig) (string, bool) {
 		SocketPath:      sock,
 		KernelImagePath: "testdata/vmlinux",
 		InitrdPath:      "testdata/initrd.cpio",
-		KernelArgs:      "console=ttyS0 reboot=k panic=1 pci=off acpi=off",
+		KernelArgs:      "console=ttyS0 reboot=k panic=1 pci=off",
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
 			MemSizeMib: firecracker.Int64(256),
