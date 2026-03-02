@@ -14,7 +14,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -162,12 +161,12 @@ func sh(cmd string) []string { return []string{"/bin/sh", "-c", cmd} }
 // ---------------------------------------------------------------------------
 
 func TestBoot_ExitZero(t *testing.T) {
-	out := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/true"}})
+	out, _ := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/true"}})
 	must.StrContains(t, out, "exit_code=0")
 }
 
 func TestBoot_ExitOne(t *testing.T) {
-	out := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/false"}})
+	out, _ := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/false"}})
 	must.StrContains(t, out, "exit_code=1")
 }
 
@@ -194,7 +193,7 @@ func TestUser_Root(t *testing.T) {
 
 func TestUser_Override(t *testing.T) {
 	user := "nobody"
-	out := boot(t, &config.RunConfig{
+	out, _ := boot(t, &config.RunConfig{
 		UserOverride: &user,
 		ExecOverride: []string{"/bin/true"},
 	})
