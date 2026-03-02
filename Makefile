@@ -11,10 +11,10 @@ TESTDATA := e2e/testdata
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) go build \
 		-trimpath -ldflags="-s -w" \
-		-o out/init ./cmd/init
+		-o build/init ./cmd/init
 
 initrd: build
-	scripts/build-initrd.sh out/initrd.cpio $(CONFIG)
+	scripts/build-initrd.sh build/initrd.cpio $(CONFIG)
 
 rootfs:
 	@mkdir -p $(TESTDATA)
@@ -35,8 +35,8 @@ init: build
 
 testdata: kernel init rootfs
 
-e2e: testdata
+e2e: clean testdata
 	go test -tags=e2e -count=1 -v ./e2e  # requires root (sudo make e2e)
 
 clean:
-	rm -rf out/ $(TESTDATA)/
+	rm -rf build/ $(TESTDATA)/

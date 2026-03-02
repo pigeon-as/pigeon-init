@@ -27,7 +27,7 @@ PID 1 init tailored for Firecracker micro-VMs.
 ## Build
 
 ```bash
-make build      # Static init binary → out/init
+make build      # Static init binary → build/init
 make initrd     # Build initrd cpio (depends on build)
 make rootfs     # Docker image → ext4 rootfs
 make test       # Run unit tests

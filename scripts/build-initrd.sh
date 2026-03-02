@@ -1,10 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-OUTPUT="${1:-out/initrd.cpio}"
+OUTPUT="${1:-build/initrd.cpio}"
 CONFIG="${2:-}"
-INIT_BIN="out/init"
-ROOT="out/initrd-root"
+INIT_BIN="build/init"
+ROOT="build/initrd-root"
 
 [[ -f "${INIT_BIN}" ]] || { echo "error: run 'make build' first" >&2; exit 1; }
 
