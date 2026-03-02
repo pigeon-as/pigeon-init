@@ -22,6 +22,8 @@ import (
 	models "github.com/firecracker-microvm/firecracker-go-sdk/client/models"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/shoenig/test/must"
+
 	"github.com/pigeon-as/pigeon-init/internal/config"
 )
 
@@ -34,11 +36,11 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// retryBoot calls bootVM up to 3 times, retrying on timeout (nested KVM is flaky).
-func retryBoot(t *testing.T, rc *config.RunConfig) string {
+// boot calls bootVM up to 3 times, retrying on timeout (nested KVM is flaky).
+func bootWithRetry(t *testing.T, rc *config.RunConfig) string {
 	t.Helper()
 	for i := 0; i < 3; i++ {
-		out, ok := bootVM(t, rc)
+		out, ok := boot(t, rc)
 		if ok {
 			return out
 		}
@@ -51,7 +53,7 @@ func retryBoot(t *testing.T, rc *config.RunConfig) string {
 // bootVM launches a Firecracker micro-VM with the given RunConfig (delivered
 // via MMDS), waits for it to exit, and returns the serial console output.
 // Returns (output, false) on timeout so the caller can retry.
-func bootVM(t *testing.T, rc *config.RunConfig) (string, bool) {
+func boot(t *testing.T, rc *config.RunConfig) (string, bool) {
 	t.Helper()
 
 	for _, p := range []string{"testdata/vmlinux", "testdata/initrd.cpio", "testdata/rootfs.ext4"} {
@@ -160,60 +162,54 @@ func sh(cmd string) []string { return []string{"/bin/sh", "-c", cmd} }
 // ---------------------------------------------------------------------------
 
 func TestBoot_ExitZero(t *testing.T) {
-	out := retryBoot(t, &config.RunConfig{ExecOverride: []string{"/bin/true"}})
-	if !strings.Contains(out, `exit_code=0`) {
-		t.Fatal("expected exit_code=0")
-	}
+	out := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/true"}})
+	must.StrContains(t, out, "exit_code=0")
 }
 
 func TestBoot_ExitOne(t *testing.T) {
-	out := retryBoot(t, &config.RunConfig{ExecOverride: []string{"/bin/false"}})
-	if !strings.Contains(out, `exit_code=1`) {
-		t.Fatal("expected exit_code=1")
-	}
+	out := boot(t, &config.RunConfig{ExecOverride: []string{"/bin/false"}})
+	must.StrContains(t, out, "exit_code=1")
 }
 
 func TestConfig_MMDS(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		Hostname:     "mmds-works",
 		ExecOverride: sh(`test "$(hostname)" = "mmds-works"`),
 	})
 }
 
 func TestMount_Essential(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		ExecOverride: sh(`test "$(cat /proc/1/comm)" = "init"`),
 	})
 }
 
 func TestMount_Cgroups(t *testing.T) {
-	retryBoot(t, &config.RunConfig{ExecOverride: sh("test -d /sys/fs/cgroup")})
+	bootWithRetry(t, &config.RunConfig{ExecOverride: sh("test -d /sys/fs/cgroup")})
 }
 
 func TestUser_Root(t *testing.T) {
-	retryBoot(t, &config.RunConfig{ExecOverride: sh(`test "$(id -u)" = "0"`)})
+	bootWithRetry(t, &config.RunConfig{ExecOverride: sh(`test "$(id -u)" = "0"`)})
 }
 
 func TestUser_Override(t *testing.T) {
 	user := "nobody"
-	out := retryBoot(t, &config.RunConfig{
+	out := boot(t, &config.RunConfig{
 		UserOverride: &user,
 		ExecOverride: []string{"/bin/true"},
 	})
-	if !strings.Contains(out, `uid=65534`) {
-		t.Fatal("expected uid=65534 (nobody)")
-	}
+	must.StrContains(t, out, "uid=65534")
 }
 
 func TestEnv_Extra(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		ExtraEnv:     map[string]string{"MY_VAR": "hello"},
 		ExecOverride: sh(`test "$MY_VAR" = "hello"`),
 	})
 }
 
 func TestEnv_ImageEnv(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		ImageConfig: &config.ImageConfig{
 			Entrypoint: []string{"/bin/sh"},
 			Cmd:        []string{"-c", `test "$IMG_VAR" = "from_image"`},
@@ -223,32 +219,32 @@ func TestEnv_ImageEnv(t *testing.T) {
 }
 
 func TestEtc_Hostname(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		Hostname:     "pigeon-test",
 		ExecOverride: sh(`test "$(hostname)" = "pigeon-test"`),
 	})
 }
 
 func TestEtc_Hosts(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		EtcHosts:     []config.EtcHost{{Host: "myhost.test", IP: "10.0.0.99"}},
 		ExecOverride: sh(`grep -q "10.0.0.99.*myhost.test" /etc/hosts`),
 	})
 }
 
 func TestEtc_Resolv(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		EtcResolv:    &config.EtcResolv{Nameservers: []string{"8.8.8.8"}},
 		ExecOverride: sh(`grep -q "nameserver 8.8.8.8" /etc/resolv.conf`),
 	})
 }
 
 func TestNet_Loopback(t *testing.T) {
-	retryBoot(t, &config.RunConfig{ExecOverride: sh("ip addr show lo | grep -q 127.0.0.1")})
+	bootWithRetry(t, &config.RunConfig{ExecOverride: sh("ip addr show lo | grep -q 127.0.0.1")})
 }
 
 func TestWorkDir(t *testing.T) {
-	retryBoot(t, &config.RunConfig{
+	bootWithRetry(t, &config.RunConfig{
 		ImageConfig:  &config.ImageConfig{WorkingDir: "/tmp"},
 		ExecOverride: sh(`test "$(pwd)" = "/tmp"`),
 	})
