@@ -33,5 +33,4 @@ go.work.sum
 
 e2e/testdata/
 testdata/
-out/
 build/

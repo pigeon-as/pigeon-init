@@ -7,6 +7,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/firecracker-microvm/firecracker-go-sdk v1.0.0
 	github.com/mdlayher/vsock v1.2.1
+	github.com/shoenig/test v1.12.2
 	github.com/sirupsen/logrus v1.9.4
 	github.com/vishvananda/netlink v1.3.0
 	golang.org/x/sys v0.31.0
@@ -30,6 +31,7 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-openapi/validate v0.22.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
